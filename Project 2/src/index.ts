@@ -1,6 +1,6 @@
-const express = require('express')
-require('express-async-errors');
-const {PrismaClient} = require('@prisma/client')
+import express from 'express'
+import 'express-async-errors';
+import {Prisma, PrismaClient} from '@prisma/client'
 
 const prisma = new PrismaClient()
 const app = express()
@@ -9,7 +9,6 @@ app.use(express.json())
 
 
 app.get("/", async (req, res) => {
-
     res.json({msg: "Welcome!!!"})
 })
 
@@ -40,11 +39,9 @@ app.get('/user/:id/drafts', async (req, res) => {
 app.post(`/signup`, async (req, res) => {
     const {name, email, posts} = req.body
 
-    const postData = posts
-        ? posts.map((post) => {
-            return {title: post.title, content: post.content || undefined}
-        })
-        : []
+    const postData = posts?.map((post: Prisma.PostCreateInput) => {
+        return {title: post?.title, content: post?.content}
+    })
 
     const result = await prisma.user.create({
         data: {
@@ -92,16 +89,13 @@ app.put('/user/:id/profile', async (req, res) => {
                 },
             },
         },
-        include:{
+        include: {
             profile: true
         }
     })
 
     res.send(userWithUpdatedProfile)
 })
-
-
-
 
 
 app.post(`/post`, async (req, res) => {
@@ -155,7 +149,7 @@ app.put('/post/:id/publish', async (req, res) => {
 
         const updatedPost = await prisma.post.update({
             where: {id: Number(id)},
-            data: {published: !postData.published},
+            data: {published: !postData?.published},
         })
 
         res.json(updatedPost)
@@ -169,13 +163,17 @@ app.put('/post/:id/publish', async (req, res) => {
 app.delete(`/post/:id`, async (req, res) => {
     const {id} = req.params
 
-    const post = await prisma.post.delete({
-        where: {
-            id: Number(id),
-        },
-    })
+    try {
+        const post = await prisma.post.delete({
+            where: {
+                id: Number(id),
+            },
+        })
 
-    res.json(post)
+        res.json(post)
+    } catch (error) {
+        res.json({error: `Post with ID ${id} does not exist in the database`})
+    }
 })
 
 
@@ -193,11 +191,11 @@ app.get(`/post/:id`, async (req, res) => {
 app.get('/feed', async (req, res) => {
     const {searchString, skip, take, orderBy} = req.query
 
-    const or = searchString
+    const or: Prisma.PostWhereInput = searchString
         ? {
             OR: [
-                {title: {contains: searchString}},
-                {content: {contains: searchString}},
+                {title: {contains: searchString as string}},
+                {content: {contains: searchString as string}},
             ],
         }
         : {}
@@ -211,7 +209,7 @@ app.get('/feed', async (req, res) => {
         take: Number(take) || undefined,
         skip: Number(skip) || undefined,
         orderBy: {
-            updatedAt: orderBy || undefined,
+            updatedAt: orderBy as Prisma.SortOrder,
         },
     })
 
