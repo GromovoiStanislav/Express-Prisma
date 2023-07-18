@@ -6,3 +6,4 @@
 - 4 - REST API Example (JS)
 - 5 - REST API Example (JS)
 - 6 - REST API Example (TS)
+- 7 - REST API Example (TS)

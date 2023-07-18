@@ -1,0 +1,54 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
+model User{
+  id Int @id @default(autoincrement())
+  name String
+  email String
+  password String
+  address Address?
+  books Book[]
+
+  editorId Int? @unique
+  editor User? @relation("AuthorEditor",fields: [editorId], references:[id])
+  author User? @relation("AuthorEditor")
+
+  publishers User[] @relation("AuthorPublisher")
+  authors User[] @relation("AuthorPublisher")
+}
+
+model Address {
+  id Int @id @default(autoincrement())
+  country String
+  city String
+  street String
+  user User @relation(fields:[userId], references:[id])
+  userId Int @unique
+}
+
+model Book{
+  id Int @id @default(autoincrement())
+  title String
+  description String
+  author User @relation(fields:[authorId], references:[id])
+  authorId Int
+  categories Category[]
+}
+
+model Category{
+  id Int @id @default(autoincrement())
+  name String
+  books Book[]
+  parentCategoryId Int?
+  parentCategory Category? @relation("ParentSubCategories", fields:[parentCategoryId], references:[id])
+  subCategories Category[] @relation("ParentSubCategories")
+}

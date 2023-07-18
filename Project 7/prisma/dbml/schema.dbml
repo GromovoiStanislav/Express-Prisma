@@ -1,0 +1,52 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table User {
+  id Int [pk, increment]
+  name String [not null]
+  email String [not null]
+  password String [not null]
+  address Address
+  books Book [not null]
+  editorId Int [unique]
+  editor User
+  author User
+  publishers User [not null]
+  authors User [not null]
+}
+
+Table Address {
+  id Int [pk, increment]
+  country String [not null]
+  city String [not null]
+  street String [not null]
+  user User [not null]
+  userId Int [unique, not null]
+}
+
+Table Book {
+  id Int [pk, increment]
+  title String [not null]
+  description String [not null]
+  author User [not null]
+  authorId Int [not null]
+  categories Category [not null]
+}
+
+Table Category {
+  id Int [pk, increment]
+  name String [not null]
+  books Book [not null]
+  parentCategoryId Int
+  parentCategory Category
+  subCategories Category [not null]
+}
+
+Ref: User.editorId - User.id
+
+Ref: Address.userId - User.id
+
+Ref: Book.authorId > User.id
+
+Ref: Category.parentCategoryId - Category.id
